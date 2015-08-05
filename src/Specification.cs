@@ -5,6 +5,20 @@ namespace netspecs
 {
     public abstract class Specification<T>
     {
+        public Lazy<Func<T, bool>> Function { get; private set; }
+
+        public Specification()
+        {
+            this.Function = new Lazy<Func<T, bool>>(() => this.IsSatisfiedBy().Compile());
+        }
+
+        public abstract Expression<Func<T, bool>> IsSatisfiedBy();
+
+        public bool IsSatisfiedBy(T obj)
+        {
+            return this.Function.Value(obj);
+        }
+
         public static implicit operator Expression<Func<T, bool>>(Specification<T> spec)
         {
             return spec.IsSatisfiedBy();
@@ -12,7 +26,7 @@ namespace netspecs
 
         public static implicit operator Func<T, bool>(Specification<T> spec)
         {
-            return spec.IsSatisfiedBy().Compile();
+            return spec.Function.Value;
         }
 
         public static Specification<T> operator &(Specification<T> left, Specification<T> right)
@@ -50,7 +64,5 @@ namespace netspecs
             var expression = spec.IsSatisfiedBy();
             return new GenericSpecification<T>(Expression.Lambda<Func<T, bool>>(Expression.Not(expression.Body), expression.Parameters));
         }
-
-        public abstract Expression<Func<T, bool>> IsSatisfiedBy();
     }
 }

@@ -24,5 +24,17 @@ namespace netspecs.Tests
             Func<User, bool> func = spec;
             Assert.NotNull(func);
         }
+
+        [Fact]
+        public void ShouldVerifySpecificItem()
+        {
+            var spec = new GenericSpecification<User>(u => u.FavoriteNumber > 3);
+
+            var user1 = new User { FavoriteNumber = 4 };
+            Assert.True(spec.IsSatisfiedBy(user1));
+
+            var user2 = new User { FavoriteNumber = 1 };
+            Assert.False(spec.IsSatisfiedBy(user2));
+        }
     }
 }
